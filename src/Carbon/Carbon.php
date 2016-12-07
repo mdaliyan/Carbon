@@ -52,6 +52,8 @@ use Symfony\Component\Translation\TranslatorInterface;
  */
 class Carbon extends DateTime
 {
+	use Jalali;
+
     /**
      * The day constants.
      */
@@ -652,6 +654,11 @@ class Carbon extends DateTime
      */
     public function __get($name)
     {
+        $j = $this->__jGet($name);
+        if ($j !== false) {
+            return $j;
+        }
+
         switch (true) {
             case array_key_exists($name, $formats = array(
                 'year' => 'Y',
@@ -733,6 +740,8 @@ class Carbon extends DateTime
      */
     public function __set($name, $value)
     {
+        $this->__jSet($name, $value);
+
         switch ($name) {
             case 'year':
             case 'month':
