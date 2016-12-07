@@ -11,7 +11,7 @@
 
 namespace Tests\CarbonInterval;
 
-use Carbon\CarbonInterval;
+use Mdaliyan\CarbonInterval;
 use Tests\AbstractTestCase;
 
 class GettersTest extends AbstractTestCase

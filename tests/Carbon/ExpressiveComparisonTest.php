@@ -11,7 +11,7 @@
 
 namespace Tests\Carbon;
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 use Tests\AbstractTestCase;
 
 class ExpressiveComparisonTest extends AbstractTestCase

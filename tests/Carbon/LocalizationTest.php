@@ -11,7 +11,7 @@
 
 namespace Tests\Carbon;
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Translator;
 use Tests\AbstractTestCase;

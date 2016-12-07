@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Carbon;
+namespace Mdaliyan;
 
-use Carbon\Exceptions\InvalidDateException;
+use Mdaliyan\Exceptions\InvalidDateException;
 use Closure;
 use DatePeriod;
 use DateTime;
@@ -152,7 +152,7 @@ class Carbon extends DateTime
     /**
      * A test Carbon instance to be returned when now instances are created.
      *
-     * @var \Carbon\Carbon
+     * @var \Mdaliyan\Carbon
      */
     protected static $testNow;
 
@@ -494,7 +494,7 @@ class Carbon extends DateTime
      * @param int|null                  $second
      * @param \DateTimeZone|string|null $tz
      *
-     * @throws \Carbon\Exceptions\InvalidDateException
+     * @throws \Mdaliyan\Exceptions\InvalidDateException
      *
      * @return static
      */

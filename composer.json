@@ -31,12 +31,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Carbon\\": "src/Carbon/"
+            "Mdaliyan\\": "src/Carbon/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "TestsJ\\": "testsJ/"
         }
     },
     "extra": {

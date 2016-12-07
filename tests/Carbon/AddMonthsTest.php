@@ -11,13 +11,13 @@
 
 namespace Tests\Carbon;
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 use Tests\AbstractTestCase;
 
 class AddMonthsTest extends AbstractTestCase
 {
     /**
-     * @var \Carbon\Carbon
+     * @var \Mdaliyan\Carbon
      */
     private $carbon;
 

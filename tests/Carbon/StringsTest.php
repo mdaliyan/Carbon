@@ -11,7 +11,7 @@
 
 namespace Tests\Carbon;
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 use DateTime;
 use Tests\AbstractTestCase;
 use Tests\Carbon\Fixtures\MyCarbon;
@@ -81,7 +81,7 @@ class StringsTest extends AbstractTestCase
          * $cache = setlocale(LC_TIME, 0);
          * $d = Carbon::create(2016, 01, 06, 00, 00, 00);
          * setlocale(LC_TIME, 'spanish');
-         * $this->assertSame(utf8_encode('miércoles 06 enero 2016'), $d->formatLocalized('%A %d %B %Y'));
+         * $this->assertSame(utf8_encode('miï¿½rcoles 06 enero 2016'), $d->formatLocalized('%A %d %B %Y'));
          * setlocale(LC_TIME, $cache);
          * Carbon::setUtf8(false);
          */

@@ -11,8 +11,8 @@
 
 namespace Tests\Carbon;
 
-use Carbon\Carbon;
-use Carbon\CarbonInterval;
+use Mdaliyan\Carbon;
+use Mdaliyan\CarbonInterval;
 use Closure;
 use Tests\AbstractTestCase;
 

@@ -11,7 +11,7 @@
 
 namespace Tests\CarbonInterval;
 
-use Carbon\CarbonInterval;
+use Mdaliyan\CarbonInterval;
 use DateInterval;
 use Tests\AbstractTestCase;
 

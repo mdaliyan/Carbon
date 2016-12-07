@@ -11,8 +11,8 @@
 
 namespace Tests\Carbon;
 
-use Carbon\Carbon;
-use Carbon\Exceptions\InvalidDateException;
+use Mdaliyan\Carbon;
+use Mdaliyan\Exceptions\InvalidDateException;
 use Tests\AbstractTestCase;
 
 class CreateSafeTest extends AbstractTestCase
@@ -25,7 +25,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage second : -1 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForSecondLowerThanZero()
@@ -34,7 +34,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage second : 60 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForSecondGreaterThan59()
@@ -43,7 +43,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage minute : -1 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForMinuteLowerThanZero()
@@ -52,7 +52,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage minute : 60 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForMinuteGreaterThan59()
@@ -61,7 +61,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage hour : -6 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForHourLowerThanZero()
@@ -70,7 +70,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage hour : 25 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForHourGreaterThan24()
@@ -79,7 +79,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage day : -5 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForDayLowerThanZero()
@@ -88,7 +88,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage day : 32 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForDayGreaterThan31()
@@ -97,7 +97,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage month : -4 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForMonthLowerThanZero()
@@ -106,7 +106,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage month : 13 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForMonthGreaterThan12()
@@ -115,7 +115,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage year : -5 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForYearLowerThanZero()
@@ -124,7 +124,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage year : 10000 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForYearGreaterThan12()
@@ -133,7 +133,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage day : 31 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForInvalidDayInShortMonth()
@@ -143,7 +143,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage day : 30 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForInvalidDayForFebruaryInLeapYear()
@@ -160,7 +160,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage day : 29 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForInvalidDayForFebruaryInNonLeapYear()
@@ -171,7 +171,7 @@ class CreateSafeTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \Carbon\Exceptions\InvalidDateException
+     * @expectedException \Mdaliyan\Exceptions\InvalidDateException
      * @expectedExceptionMessage second : 15.1 is not a valid value.
      */
     public function testCreateSafeThrowsExceptionForWithNonIntegerValue()

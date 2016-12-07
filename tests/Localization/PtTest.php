@@ -11,7 +11,7 @@
 
 namespace Tests\Localization;
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 use Tests\AbstractTestCase;
 
 class PtTest extends AbstractTestCase

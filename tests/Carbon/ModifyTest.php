@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 use Tests\AbstractTestCase;
 
 class ModifyTest extends AbstractTestCase

@@ -11,7 +11,7 @@
 
 namespace Tests\Carbon\Fixtures;
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 
 class MyCarbon extends Carbon
 {

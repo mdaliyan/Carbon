@@ -10,7 +10,7 @@
 A simple PHP API extension for DateTime. [http://carbon.nesbot.com](http://carbon.nesbot.com)
 
 ```php
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 
 printf("Right now is %s", Carbon::now()->toDateTimeString());
 printf("Right now in Vancouver is %s", Carbon::now('America/Vancouver'));  //implicit __toString()
@@ -68,7 +68,7 @@ $ composer require nesbot/carbon
 <?php
 require 'vendor/autoload.php';
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 
 printf("Now: %s", Carbon::now());
 ```
@@ -82,7 +82,7 @@ Why are you not using [composer](http://getcomposer.org/)? Download [Carbon.php]
 <?php
 require 'path/to/Carbon.php';
 
-use Carbon\Carbon;
+use Mdaliyan\Carbon;
 
 printf("Now: %s", Carbon::now());
 ```

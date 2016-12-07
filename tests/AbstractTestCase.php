@@ -11,8 +11,8 @@
 
 namespace Tests;
 
-use Carbon\Carbon;
-use Carbon\CarbonInterval;
+use Mdaliyan\Carbon;
+use Mdaliyan\CarbonInterval;
 use Closure;
 use PHPUnit_Framework_TestCase;
 
@@ -69,7 +69,7 @@ abstract class AbstractTestCase extends PHPUnit_Framework_TestCase
 
     protected function assertInstanceOfCarbon($d)
     {
-        $this->assertInstanceOf('Carbon\Carbon', $d);
+        $this->assertInstanceOf('Mdaliyan\Carbon', $d);
     }
 
     protected function assertCarbonInterval(CarbonInterval $ci, $years, $months = null, $days = null, $hours = null, $minutes = null, $seconds = null)
@@ -108,7 +108,7 @@ abstract class AbstractTestCase extends PHPUnit_Framework_TestCase
 
     protected function assertInstanceOfCarbonInterval($d)
     {
-        $this->assertInstanceOf('Carbon\CarbonInterval', $d);
+        $this->assertInstanceOf('Mdaliyan\CarbonInterval', $d);
     }
 
     protected function wrapWithTestNow(Closure $func, Carbon $dt = null)
