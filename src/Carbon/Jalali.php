@@ -8,9 +8,73 @@ use InvalidArgumentException;
 /**
  * Class Carbon
  * @package Mdaliyan\Carbon
+ * @property      int $jYear
+ * @property      int $jMonth
+ * @property      int $jDay
+ * @property      int jYearIso
+ * @property      int jHour
+ * @property      int jMinute
+ * @property      int jSecond
+ * @property      int jMicro
+ * @property      int jDayOfWeek
+ * @property      int jDayOfYear
+ * @property      int jWeekOfYear
+ * @property      int jDaysInMonth
+ * @property      int jTimestamp
+ * @property      int jWeekOfMonth
+ * @property      int jAge
+ * @property      int jQuarter
+ * @property      int jOffset
+ * @property      int jOffsetHours
+ * @property      int jDst
  */
 trait Jalali
 {
+    protected static $jWeekendDays = [self::FRIDAY];
+
+    protected static $jWeekEndsAt = self::FRIDAY;
+
+    protected static $jWeekStartsAt = self::SATURDAY;
+
+    // Todo: if true, always return farsi numbers in jFormat just an idea.
+    protected static $autoConvertDigits = false;
+
+    /**
+     * @var array
+     */
+    protected $formats = [
+        'datetime' => '%Y-%m-%d %H:%M:%S',
+        'date' => '%Y-%m-%d',
+        'time' => '%H:%M:%S',
+    ];
+
+    private static $months = array(
+        'farvardin' => 1,
+        'ordibehesht' => 2,
+        'khordad' => 3,
+        'tir' => 4,
+        'mordad' => 5,
+        'shahrivar' => 6,
+        'mehr' => 7,
+        'aban' => 8,
+        'azar' => 9,
+        'dey' => 10,
+        'bahman' => 11,
+        'esfand' => 12,
+        'فروردین' => 1,
+        'اردیبهشت' => 2,
+        'خرداد' => 3,
+        'تیر' => 4,
+        'مرداد' => 5,
+        'شهریور' => 6,
+        'مهر' => 7,
+        'آبان' => 8,
+        'آذر' => 9,
+        'دی' => 10,
+        'بهمن' => 11,
+        'اسفند' => 12,
+    );
+
     /**
      * @param $format
      * @return bool|string
@@ -23,6 +87,186 @@ trait Jalali
         }
 
         return static::strftime($format, $this->getTimestamp(), $this->getTimezone());
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    //////////////////////////// CONSTRUCTORS /////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    // TODO: Add Carbon::jParse() { Creates Carbon instance from string }
+    /**
+     * Create a carbon instance from a string.
+     * This is an alias for the constructor that allows better fluent syntax
+     * as it allows you to do Carbon::parse('Monday next week')->fn() rather
+     * than (new Carbon('Monday next week'))->fn().
+     * @param string|null $time
+     * @param \DateTimeZone|string|null $tz
+     * @return static
+     */
+//    public static function jParse($time = null, $tz = null){}
+
+    // TODO: Add the Maximum Date Jalali can handle
+//    public static function jMaxValue()
+
+    // TODO: Add the Minimum Date Jalali can handle
+//    public static function jMinValue()
+
+
+    /**
+     * Create a new jDate instance from a specific Jalali date and time.
+     * If any of $year, $month or $day are set to null their now() values will
+     * be used.
+     * If $hour is null it will be set to its now() value and the default
+     * values for $minute and $second will be their now() values.
+     * If no params are passed, now() values will be returned.
+     * @param null $year
+     * @param null $month
+     * @param null $day
+     * @param null $hour
+     * @param null $minute
+     * @param null $second
+     * @param null $tz
+     * @return Carbon
+     */
+    public static function jCreate(
+        $year = null,
+        $month = null,
+        $day = null,
+        $hour = null,
+        $minute = null,
+        $second = null,
+        $tz = null
+    ) {
+        static::jNowIfNull($year, $month, $day, $tz);
+
+        if ($year < 0) {
+            throw new InvalidArgumentException('Invalid Year Number');
+        }
+        if ($month < 0) {
+            throw new InvalidArgumentException('Invalid Month Number');
+        }
+        if ($day < 0) {
+            throw new InvalidArgumentException('Invalid Day Number');
+        }
+        if ($hour < 0) {
+            throw new InvalidArgumentException('Invalid Hour Number');
+        }
+        if ($minute < 0) {
+            throw new InvalidArgumentException('Invalid Minute Number');
+        }
+        if ($second < 0) {
+            throw new InvalidArgumentException('Invalid Second Number');
+        }
+        static::fixWraps($year, $month, $day, $hour, $minute, $second);
+
+        $G = static::toGregorian($year, $month, $day);
+
+        return static::create($G[0], $G[1], $G[2], $hour, $minute, $second, $tz);
+    }
+
+    /**
+     * @param null $year
+     * @param null $month
+     * @param null $day
+     * @param null $hour
+     * @param null $minute
+     * @param null $second
+     * @param null $tz
+     * @return Carbon
+     */
+    public static function jCreateSafe(
+        $year = null,
+        $month = null,
+        $day = null,
+        $hour = null,
+        $minute = null,
+        $second = null,
+        $tz = null
+    ) {
+        $fields = [
+            'year' => [0, 1878],
+            'month' => [0, 12],
+            'day' => [0, 31],
+            'hour' => [0, 24],
+            'minute' => [0, 59],
+            'second' => [0, 59],
+        ];
+
+        foreach ($fields as $field => $range) {
+            if ($$field !== null && (!is_int($$field) || $$field < $range[0] || $$field > $range[1])) {
+                throw new InvalidDateException($field, $$field);
+            }
+        }
+
+        return static::jCreate($year, $month, $day, $hour, $minute, $second, $tz);
+    }
+
+    /**
+     * @param null $year
+     * @param null $month
+     * @param null $day
+     * @param null $tz
+     * @return Carbon
+     */
+    public static function jCreateFromDate(
+        $year = null,
+        $month = null,
+        $day = null,
+        $tz = null
+    ) {
+        return static::jCreate($year, $month, $day, null, null, null, $tz);
+    }
+
+    /**
+     * Create a Carbon instance from just a time. The date portion is set to today.
+     * @param int|null $hour
+     * @param int|null $minute
+     * @param int|null $second
+     * @param \DateTimeZone|string|null $tz
+     * @return static
+     */
+    public static function jCreateFromTime(
+        $hour = null,
+        $minute = null,
+        $second = null,
+        $tz = null
+    ) {
+        return static::jCreate(null, null, null, $hour, $minute, $second, $tz);
+    }
+
+    /**
+     * @param $format
+     * @param $time
+     * @param null $tz
+     * @return Carbon
+     */
+    public static function jCreateFromFormat($format, $time, $tz = null)
+    {
+        $pd = static::parseFromFormat($format, $time);
+
+        return static::jCreate($pd['year'], $pd['month'], $pd['day'], $pd['hour'],
+            $pd['minute'], $pd['second'], $tz);
+    }
+
+    /**
+     * Create a Carbon instance from a timestamp.
+     * @param int $timestamp
+     * @param \DateTimeZone|string|null $tz
+     * @return static
+     */
+    public static function jCreateFromTimestamp($timestamp, $tz = null)
+    {
+        return static::createFromTimestamp($timestamp, $tz);
+    }
+
+    /**
+     * Create a Carbon instance from an UTC timestamp.
+     * @param int $timestamp
+     * @return static
+     */
+    public static function jCreateFromTimestampUTC($timestamp)
+    {
+        return static::createFromTimestampUTC($timestamp);
     }
 
     protected function __jGet($name)
@@ -134,6 +378,1242 @@ trait Jalali
 
         return self::setDate($G[0], $G[1], $G[2]);
     }
+
+    /**
+     * Set the date and time all together
+     * @param int $year
+     * @param int $month
+     * @param int $day
+     * @param int $hour
+     * @param int $minute
+     * @param int $second
+     * @return static
+     */
+    public function jSetDateTime($year, $month, $day, $hour, $minute, $second = 0)
+    {
+        return $this->jSetDate($year, $month, $day)->setTime($hour, $minute, $second);
+    }
+    ///////////////////////////////////////////////////////////////////
+    /////////////////////// WEEK SPECIAL DAYS /////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Get the first day of week
+     * @return int
+     */
+    public static function jGetWeekStartsAt()
+    {
+        return static::$jWeekStartsAt;
+    }
+
+    /**
+     * Set the first day of week
+     * @param int
+     */
+    public static function jSetWeekStartsAt($day)
+    {
+        static::$jWeekStartsAt = $day;
+    }
+
+    /**
+     * Get the last day of week
+     * @return int
+     */
+    public static function jGetWeekEndsAt()
+    {
+        return static::$jWeekEndsAt;
+    }
+
+    /**
+     * Set the last day of week
+     * @param int
+     */
+    public static function setWeekEndsAt($day)
+    {
+        static::$jWeekEndsAt = $day;
+    }
+
+    /**
+     * Get weekend days
+     * @return array
+     */
+    public static function jGetWeekendDays()
+    {
+        return static::$jWeekendDays;
+    }
+
+    /**
+     * Set weekend days
+     * @param array
+     */
+    public static function jSetWeekendDays($days)
+    {
+        static::$jWeekendDays = $days;
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ///////////////////////// TESTING AIDS ////////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    // Not needed
+
+    ///////////////////////////////////////////////////////////////////
+    /////////////////////// LOCALIZATION //////////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    // Todo: Maybe we could add a translator right here. right?
+
+    /**
+     * Convert Latin numbers to farsi numbers
+     * @param string $string
+     * @return string
+     */
+    public static function farsiNum($string)
+    {
+        return static::convertNumbers($string);
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    /////////////////////// STRING FORMATTING /////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Format the instance as date
+     * @return string
+     */
+    public function jToDateString()
+    {
+        return $this->jFormat('Y-m-d');
+    }
+
+    /**
+     * Format the instance as a readable date
+     * @return string
+     */
+    public function jToFormattedDateString()
+    {
+        return $this->jFormat('j M, Y');
+    }
+
+    /**
+     * Format the instance as time
+     * @return string
+     */
+    public function jToTimeString()
+    {
+        return $this->toTimeString();
+    }
+
+    /**
+     * Format the instance as date and time
+     * @return string
+     */
+    public function jToDateTimeString()
+    {
+        return $this->jFormat('Y-m-d H:i:s');
+    }
+
+    /**
+     * Format the instance with day, date and time
+     * @return string
+     */
+    public function jToDayDateTimeString()
+    {
+        return $this->jFormat('D, j M Y, g:i A');
+    }
+
+    /**
+     * Format the instance as ATOM
+     * @return string
+     */
+    public function jToAtomString()
+    {
+        return $this->jFormat(static::ATOM);
+    }
+
+    /**
+     * Format the instance as COOKIE
+     * @return string
+     */
+    public function jToCookieString()
+    {
+        return $this->jFormat(static::COOKIE);
+    }
+
+    /**
+     * Format the instance as ISO8601
+     * @return string
+     */
+    public function jToIso8601String()
+    {
+        return $this->jToAtomString();
+    }
+
+    /**
+     * Format the instance as RFC822
+     * @return string
+     */
+    public function jToRfc822String()
+    {
+        return $this->jFormat(static::RFC822);
+    }
+
+    /**
+     * Format the instance as RFC850
+     * @return string
+     */
+    public function jToRfc850String()
+    {
+        return $this->jFormat(static::RFC850);
+    }
+
+    /**
+     * Format the instance as RFC1036
+     * @return string
+     */
+    public function jToRfc1036String()
+    {
+        return $this->jFormat(static::RFC1036);
+    }
+
+    /**
+     * Format the instance as RFC1123
+     * @return string
+     */
+    public function jToRfc1123String()
+    {
+        return $this->jFormat(static::RFC1123);
+    }
+
+    /**
+     * Format the instance as RFC2822
+     * @return string
+     */
+    public function jToRfc2822String()
+    {
+        return $this->jFormat(static::RFC2822);
+    }
+
+    /**
+     * Format the instance as RFC3339
+     * @return string
+     */
+    public function jToRfc3339String()
+    {
+        return $this->jFormat(static::RFC3339);
+    }
+
+    /**
+     * Format the instance as RSS
+     * @return string
+     */
+    public function jToRssString()
+    {
+        return $this->jFormat(static::RSS);
+    }
+
+    /**
+     * Format the instance as W3C
+     * @return string
+     */
+    public function jToW3cString()
+    {
+        return $this->jFormat(static::W3C);
+    }
+
+
+    ///////////////////////////////////////////////////////////////////
+    ////////////////////////// COMPARISONS ////////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    // Only these Methods are needed
+
+    /**
+     * Determines if the instance is a weekday
+     *
+     * @return bool
+     */
+    public function jIsWeekday()
+    {
+        return !$this->jIsWeekend();
+    }
+
+    /**
+     * Determines if the instance is a weekend day
+     *
+     * @return bool
+     */
+    public function jIsWeekend()
+    {
+        return in_array($this->dayOfWeek, static::$jWeekendDays);
+    }
+
+    /**
+     * Determines if the instance is a leap year
+     *
+     * @return bool
+     */
+    public function jIsLeapYear()
+    {
+        return static::isLeapJalaliYear($this->jYear);
+    }
+
+
+    /**
+     * Determines if the instance is a long year.
+     * In other word, this year has 53 weeks, but normal years have 52 weeks
+     *
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Week_dates
+     *
+     * @return bool
+     */
+    public function jIsLongYear()
+    {
+        $M12Days = static::jDaysInMonth((int)$this->jFormat('Y'), 12);
+        return static::jCreate((int)$this->jFormat('Y'), 12, $M12Days, 0, 0, 0, $this->tz)->jWeekOfYear === 53;
+    }
+
+    public function jIsSameAs($format, Carbon $dt = null)
+    {
+        /** @var Carbon $dt */
+        $dt = $dt ?: static::now($this->tz);
+        return $this->jFormat($format) === $dt->jFormat($format);
+    }
+
+    /**
+     * Determines if the instance is in the current year
+     *
+     * @return bool
+     */
+    public function jIsCurrentYear()
+    {
+        return $this->jIsSameYear();
+    }
+
+    /**
+     * Checks if the passed in date is in the same year as the instance year.
+     *
+     * @param \Carbon\Carbon|null $dt The instance to compare with or null to use current day.
+     *
+     * @return bool
+     */
+    public function jIsSameYear(Carbon $dt = null)
+    {
+        return $this->jIsSameAs('Y', $dt);
+    }
+
+    /**
+     * Determines if the instance is in the current month
+     *
+     * @return bool
+     */
+    public function jIsCurrentMonth()
+    {
+        return $this->jIsSameMonth();
+    }
+
+    /**
+     * Checks if the passed in date is in the same month as the instance month (and year if needed).
+     *
+     * @param \Carbon\Carbon|null $dt The instance to compare with or null to use current day.
+     * @param bool $ofSameYear Check if it is the same month in the same year.
+     *
+     * @return bool
+     */
+    public function jIsSameMonth(Carbon $dt = null, $ofSameYear = false)
+    {
+        $format = $ofSameYear ? 'Y-m' : 'm';
+
+        return $this->jIsSameAs($format, $dt);
+    }
+
+    /**
+     * Checks if the passed in date is the same day as the instance current day.
+     *
+     * @param \Carbon\Carbon $dt
+     *
+     * @return bool
+     */
+    public function jIsSameDay(Carbon $dt)
+    {
+        return $this->toDateString() === $dt->toDateString();
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    /////////////////// ADDITIONS AND SUBTRACTIONS ////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Add years to the instance. Positive $value travel forward while
+     * negative $value travel into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddYears($value)
+    {
+        // Todo: does not work
+        return $this->jModify((int) $value.' year');
+    }
+
+    /**
+     * Add a year to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddYear($value = 1)
+    {
+        return $this->jAddYears($value);
+    }
+
+    /**
+     * Remove years from the instance.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubYears($value)
+    {
+        return $this->jAddYears(-1 * $value);
+    }
+
+    /**
+     * Remove a year from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubYear($value = 1)
+    {
+        return $this->jSubYears($value);
+    }
+
+    /**
+     * Add quarters to the instance. Positive $value travels forward while
+     * negative $value travels into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddQuarters($value)
+    {
+        return $this->jAddMonths(static::MONTHS_PER_QUARTER * $value);
+    }
+
+    /**
+     * Add a quarter to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddQuarter($value = 1)
+    {
+        return $this->jAddQuarters($value);
+    }
+
+    /**
+     * Remove quarters from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubQuarters($value)
+    {
+        return $this->jAddQuarters(-1 * $value);
+    }
+
+    /**
+     * Remove a quarter from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubQuarter($value = 1)
+    {
+        return $this->jSubQuarters($value);
+    }
+
+    /**
+     * Add centuries to the instance. Positive $value travels forward while
+     * negative $value travels into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddCenturies($value)
+    {
+        return $this->jAddYears(static::YEARS_PER_CENTURY * $value);
+    }
+
+    /**
+     * Add a century to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddCentury($value = 1)
+    {
+        return $this->jAddCenturies($value);
+    }
+
+    /**
+     * Remove centuries from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubCenturies($value)
+    {
+        return $this->jAddCenturies(-1 * $value);
+    }
+
+    /**
+     * Remove a century from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubCentury($value = 1)
+    {
+        return $this->jAddCenturies($value);
+    }
+
+    /**
+     * Add months to the instance. Positive $value travels forward while
+     * negative $value travels into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddMonths($value)
+    {
+        if (static::shouldOverflowMonths()) {
+            return $this->jAddMonthsWithOverflow($value);
+        }
+
+        return $this->jAddMonthsNoOverflow($value);
+    }
+
+    /**
+     * Add a month to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddMonth($value = 1)
+    {
+        return $this->jAddMonths($value);
+    }
+
+    /**
+     * Remove months from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubMonths($value)
+    {
+        return $this->jAddMonths(-1 * $value);
+    }
+
+    /**
+     * Remove a month from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubMonth($value = 1)
+    {
+        return $this->jSubMonths($value);
+    }
+
+    /**
+     * Add months to the instance. Positive $value travels forward while
+     * negative $value travels into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddMonthsWithOverflow($value)
+    {
+        // Todo: does not work
+        return $this->jModify((int) $value.' month');
+    }
+
+    /**
+     * Add a month to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddMonthWithOverflow($value = 1)
+    {
+        return $this->jAddMonthsWithOverflow($value);
+    }
+
+    /**
+     * Remove months from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubMonthsWithOverflow($value)
+    {
+        return $this->jAddMonthsWithOverflow(-1 * $value);
+    }
+
+    /**
+     * Remove a month from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubMonthWithOverflow($value = 1)
+    {
+        return $this->jSubMonthsWithOverflow($value);
+    }
+
+
+    /**
+     * Add months without overflowing to the instance. Positive $value
+     * travels forward while negative $value travels into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddMonthsNoOverflow($value)
+    {
+        $day = $this->day;
+
+        $this->jModify((int) $value.' month');
+
+        if ($day !== $this->day) {
+            $this->jModify('last day of previous month');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a month with no overflow to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddMonthNoOverflow($value = 1)
+    {
+        return $this->jAddMonthsNoOverflow($value);
+    }
+
+    /**
+     * Remove months with no overflow from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubMonthsNoOverflow($value)
+    {
+        return $this->jAddMonthsNoOverflow(-1 * $value);
+    }
+
+    /**
+     * Remove a month with no overflow from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubMonthNoOverflow($value = 1)
+    {
+        return $this->jSubMonthsNoOverflow($value);
+    }
+
+    /**
+     * Add days to the instance. Positive $value travels forward while
+     * negative $value travels into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddDays($value)
+    {
+        return $this->addDays($value);
+    }
+
+    /**
+     * Add a day to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddDay($value = 1)
+    {
+        return $this->addDays($value);
+    }
+
+    /**
+     * Remove a day from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubDay($value = 1)
+    {
+        return $this->subDays($value);
+    }
+
+    /**
+     * Remove days from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubDays($value)
+    {
+        return $this->addDays(-1 * $value);
+    }
+
+
+
+
+
+    /**
+     * Add weekdays to the instance. Positive $value travels forward while
+     * negative $value travels into the past.
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddWeekdays($value)
+    {
+        // Todo: make sure this works woth Jalali
+        // fix for https://bugs.php.net/bug.php?id=54909
+        $t = $this->toTimeString();
+        $this->jModify((int) $value.' weekday');
+
+        return $this->setTimeFromTimeString($t);
+    }
+
+    /**
+     * Add a weekday to the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jAddWeekday($value = 1)
+    {
+        return $this->jAddWeekdays($value);
+    }
+
+    /**
+     * Remove weekdays from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubWeekdays($value)
+    {
+        return $this->jAddWeekdays(-1 * $value);
+    }
+
+    /**
+     * Remove a weekday from the instance
+     *
+     * @param int $value
+     *
+     * @return static
+     */
+    public function jSubWeekday($value = 1)
+    {
+        return $this->jSubWeekdays($value);
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    /////////////////////////// DIFFERENCES ///////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    // Todo: Is it needed? Make some tests
+    // Maybe these functions are needed
+    // diffInYears
+    // diffInMonths
+    // diffInWeekdays
+    // diffInWeekendDays
+
+    // Todo: this is needed indeed -> diffForHumans
+
+
+    ///////////////////////////////////////////////////////////////////
+    //////////////////////////// MODIFIERS ////////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Resets the date to the first day of the month and the time to 00:00:00
+     *
+     * @return static
+     */
+    public function jStartOfMonth()
+    {
+        return $this->jSetDateTime($this->jYear, $this->jMonth, 1, 0, 0, 0);
+    }
+
+    /**
+     * Resets the date to end of the month and time to 23:59:59
+     *
+     * @return static
+     */
+    public function jEndOfMonth()
+    {
+        return $this->jSetDateTime($this->jYear, $this->jMonth, static::jDaysInMonth($this->jYear, $this->jMonth), 23, 59, 59);
+    }
+
+    /**
+     * Resets the date to the first day of the quarter and the time to 00:00:00
+     *
+     * @return static
+     */
+    public function jStartOfQuarter()
+    {
+        // Todo: test of this method works fine
+        $month = ($this->jQuarter - 1) * static::MONTHS_PER_QUARTER + 1;
+
+        return $this->jSetDateTime($this->jYear, $month, 1, 0, 0, 0);
+    }
+    /**
+     * Resets the date to end of the quarter and time to 23:59:59
+     *
+     * @return static
+     */
+    public function jEndOfQuarter()
+    {
+        return $this->jStartOfQuarter()->jAddMonths(static::MONTHS_PER_QUARTER - 1)->jEndOfMonth();
+    }
+
+    /**
+     * Resets the date to the first day of the year and the time to 00:00:00
+     *
+     * @return static
+     */
+    public function jStartOfYear()
+    {
+        return $this->jSetDateTime($this->jYear, 1, 1, 0, 0, 0);
+    }
+
+    /**
+     * Resets the date to end of the year and time to 23:59:59
+     *
+     * @return static
+     */
+    public function jEndOfYear()
+    {
+        return $this->jSetDateTime($this->jYear, 12, static::jDaysInMonth($this->jYear, 12), 23, 59, 59);
+    }
+
+    /**
+     * Resets the date to the first day of the decade and the time to 00:00:00
+     *
+     * @return static
+     */
+    public function jStartOfDecade()
+    {
+        $year = $this->jYear - $this->jYear % static::YEARS_PER_DECADE;
+
+        return $this->jSetDateTime($year, 1, 1, 0, 0, 0);
+    }
+
+    /**
+     * Resets the date to end of the decade and time to 23:59:59
+     *
+     * @return static
+     */
+    public function jEndOfDecade()
+    {
+        $year = $this->jYear - $this->jYear % static::YEARS_PER_DECADE + static::YEARS_PER_DECADE - 1;
+
+        return $this->jSetDateTime($year, 12, static::jDaysInMonth($year, 12), 23, 59, 59);
+    }
+
+    /**
+     * Resets the date to the first day of the century and the time to 00:00:00
+     *
+     * @return static
+     */
+    public function jStartOfCentury()
+    {
+        $year = $this->jYear - ($this->jYear - 1) % static::YEARS_PER_CENTURY;
+
+        return $this->jSetDateTime($year, 1, 1, 0, 0, 0);
+    }
+
+    /**
+     * Resets the date to end of the century and time to 23:59:59
+     *
+     * @return static
+     */
+    public function jEndOfCentury()
+    {
+        $year = $this->jYear - 1 - ($this->jYear - 1) % static::YEARS_PER_CENTURY + static::YEARS_PER_CENTURY;
+
+        return $this->jSetDateTime($year, 12, static::jDaysInMonth($year, 12), 23, 59, 59);
+    }
+
+    /**
+     * Resets the date to the first day of week (defined in $weekStartsAt) and the time to 00:00:00
+     *
+     * @return static
+     */
+    public function jStartOfWeek()
+    {
+        while ($this->dayOfWeek !== static::$jWeekStartsAt) {
+            $this->subDay();
+        }
+
+        return $this->startOfDay();
+    }
+
+    /**
+     * Resets the date to end of week (defined in $weekEndsAt) and time to 23:59:59
+     *
+     * @return static
+     */
+    public function jEndOfWeek()
+    {
+        while ($this->dayOfWeek !== static::$jWeekEndsAt) {
+            $this->addDay();
+        }
+
+        return $this->endOfDay();
+    }
+
+    /**
+     * Modify to the next occurrence of a given day of the week.
+     * If no dayOfWeek is provided, modify to the next occurrence
+     * of the current day of the week.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function jNext($dayOfWeek = null)
+    {
+        if ($dayOfWeek === null) {
+            $dayOfWeek = $this->dayOfWeek;
+        }
+
+        return $this->startOfDay()->jModify('next '.static::$days[$dayOfWeek]);
+    }
+
+    /**
+     * Modify to the previous occurrence of a given day of the week.
+     * If no dayOfWeek is provided, modify to the previous occurrence
+     * of the current day of the week.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function jPrevious($dayOfWeek = null)
+    {
+        if ($dayOfWeek === null) {
+            $dayOfWeek = $this->dayOfWeek;
+        }
+
+        return $this->startOfDay()->jModify('last '.static::$days[$dayOfWeek]);
+    }
+    /**
+     * Go forward or backward to the next week- or weekend-day.
+     *
+     * @param bool $weekday
+     * @param bool $forward
+     *
+     * @return static
+     */
+
+    private function jNextOrPreviousDay($weekday = true, $forward = true)
+    {
+        $step = $forward ? 1 : -1;
+
+        do {
+            $this->addDay($step);
+        } while ($weekday ? $this->jIsWeekend() : $this->jIsWeekday());
+
+        return $this;
+    }
+
+
+    /**
+     * Go forward to the next weekday.
+     *
+     * @return $this
+     */
+    public function jNextWeekday()
+    {
+        return $this->jNextOrPreviousDay();
+    }
+
+    /**
+     * Go backward to the previous weekday.
+     *
+     * @return static
+     */
+    public function jPreviousWeekday()
+    {
+        return $this->jNextOrPreviousDay(true, false);
+    }
+
+    /**
+     * Go forward to the next weekend day.
+     *
+     * @return static
+     */
+    public function jNextWeekendDay()
+    {
+        return $this->jNextOrPreviousDay(false);
+    }
+
+    /**
+     * Go backward to the previous weekend day.
+     *
+     * @return static
+     */
+    public function jPreviousWeekendDay()
+    {
+        return $this->jNextOrPreviousDay(false, false);
+    }
+
+
+    /**
+     * Modify to the first occurrence of a given day of the week
+     * in the current month. If no dayOfWeek is provided, modify to the
+     * first day of the current month.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function jFirstOfMonth($dayOfWeek = null)
+    {
+        $this->startOfDay();
+        if ($dayOfWeek === null) {
+            return $this->jDay(1);
+        }
+
+        return $this->jModify('first '.static::$days[$dayOfWeek].' of '.$this->jFormat('F').' '.$this->jYear);
+    }
+
+    /**
+     * Modify to the last occurrence of a given day of the week
+     * in the current month. If no dayOfWeek is provided, modify to the
+     * last day of the current month.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function jLastOfMonth($dayOfWeek = null)
+    {
+        $this->startOfDay();
+
+        if ($dayOfWeek === null) {
+            return $this->jDay($this->jDaysInMonth);
+        }
+
+        return $this->jModify('last '.static::$days[$dayOfWeek].' of '.$this->jFormat('F').' '.$this->year);
+    }
+
+    /**
+     * Modify to the given occurrence of a given day of the week
+     * in the current month. If the calculated occurrence is outside the scope
+     * of the current month, then return false and no modifications are made.
+     * Use the supplied constants to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int $nth
+     * @param int $dayOfWeek
+     *
+     * @return mixed
+     */
+    public function jNthOfMonth($nth, $dayOfWeek)
+    {
+        // Todo: How does this work anyway?
+        $dt = $this->copy()->jFirstOfMonth();
+        $check = $dt->jFormat('Y-m');
+        $dt->jModify('+'.$nth.' '.static::$days[$dayOfWeek]);
+
+        return $dt->jFormat('Y-m') === $check ? $this->jModify($dt) : false;
+    }
+
+    /**
+     * Modify to the first occurrence of a given day of the week
+     * in the current quarter. If no dayOfWeek is provided, modify to the
+     * first day of the current quarter.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function jFirstOfQuarter($dayOfWeek = null)
+    {
+        return $this->jSetDate($this->jYear, $this->jQuarter * static::MONTHS_PER_QUARTER - 2, 1)->jFirstOfMonth($dayOfWeek);
+    }
+
+    /**
+     * Modify to the last occurrence of a given day of the week
+     * in the current quarter. If no dayOfWeek is provided, modify to the
+     * last day of the current quarter.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function jLastOfQuarter($dayOfWeek = null)
+    {
+        return $this->jSetDate($this->jYear, $this->jQuarter * static::MONTHS_PER_QUARTER, 1)->jLastOfMonth($dayOfWeek);
+    }
+
+
+    /**
+     * Modify to the given occurrence of a given day of the week
+     * in the current quarter. If the calculated occurrence is outside the scope
+     * of the current quarter, then return false and no modifications are made.
+     * Use the supplied constants to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int $nth
+     * @param int $dayOfWeek
+     *
+     * @return mixed
+     */
+    public function nthOfQuarter($nth, $dayOfWeek)
+    {
+        $dt = $this->copy()->jDay(1)->jMonth($this->jQuarter * static::MONTHS_PER_QUARTER);
+        $lastMonth = $dt->jMonth;
+        $year = $dt->jYear;
+        $dt->jFirstOfQuarter()->jModify('+'.$nth.' '.static::$days[$dayOfWeek]);
+
+        return ($lastMonth < $dt->month || $year !== $dt->year) ? false : $this->jModify($dt);
+    }
+
+    /**
+     * Modify to the first occurrence of a given day of the week
+     * in the current year. If no dayOfWeek is provided, modify to the
+     * first day of the current year.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function jFirstOfYear($dayOfWeek = null)
+    {
+        return $this->jMonth(1)->jFirstOfMonth($dayOfWeek);
+    }
+
+    /**
+     * Modify to the last occurrence of a given day of the week
+     * in the current year. If no dayOfWeek is provided, modify to the
+     * last day of the current year.  Use the supplied constants
+     * to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int|null $dayOfWeek
+     *
+     * @return static
+     */
+    public function lastOfYear($dayOfWeek = null)
+    {
+        return $this->jMonth(static::MONTHS_PER_YEAR)->jLastOfMonth($dayOfWeek);
+    }
+
+    /**
+     * Modify to the given occurrence of a given day of the week
+     * in the current year. If the calculated occurrence is outside the scope
+     * of the current year, then return false and no modifications are made.
+     * Use the supplied constants to indicate the desired dayOfWeek, ex. static::MONDAY.
+     *
+     * @param int $nth
+     * @param int $dayOfWeek
+     *
+     * @return mixed
+     */
+    public function jNthOfYear($nth, $dayOfWeek)
+    {
+        $dt = $this->copy()->jFirstOfYear()->jModify('+'.$nth.' '.static::$days[$dayOfWeek]);
+
+        return $this->jYear === $dt->jYear ? $this->jModify($dt) : false;
+    }
+
+    /**
+     * Check if its the birthday. Compares the date/month values of the two dates.
+     *
+     * @param \Carbon\Carbon|null $dt The instance to compare with or null to use current day.
+     *
+     * @return bool
+     */
+    public function jIsBirthday(Carbon $dt = null)
+    {
+        return $this->jIsSameAs('md', $dt);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ///////////////////////////////////////////////////////////////////
     //////////////////////////// jDateTime ////////////////////////////
@@ -974,5 +2454,337 @@ trait Jalali
 
 
 
+
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////
+    /////////////////////// Private Helpers ///////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+
+    /**
+     * Convert Latin numbers to persian numbers
+     * @param string $string
+     * @return string
+     */
+    protected static function convertNumbersToEnglish($string)
+    {
+        $farsi_array = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+        $english_array = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+        return str_replace($farsi_array, $english_array, $string);
+    }
+
+    /**
+     * Checks if current day is Holiday.
+     *
+     * Note: Fridays are indeed Holidays.
+     * Maybe we can add more days like new year holidays here.
+     *
+     * @return bool
+     */
+    public function jIsHoliday()
+    {
+        return $this->isFriday();
+    }
+
+    /**
+     * Alter the timestamp of a Carbon object by incrementing or decrementing
+     * in a format accepted by strtotime(). Applies the modify to Jalali Date.
+     *
+     * @param string $str A date/time string. Valid formats are explained in <a href="http://www.php.net/manual/en/datetime.formats.php">Date and Time Formats</a>.
+     * @return static|boolean Returns the Carbon object for method chaining or FALSE on failure.
+     * @link http://php.net/manual/en/datetime.modify.php completely works with jalali absolute dates
+     * @link http://php.net/manual/en/datetime.formats.relative.php relative dates are not fully supported yet
+     */
+    public function jModify($str)
+    {
+        $d = static::getJDateArray($this);
+        $modifyIsDone = false;
+        $str = static::convertNumbersToEnglish(trim(strtolower($str)));
+
+        switch (true) {
+            // Relative Day/Week/Weekday to a relative/absolute date
+            case (preg_match('((the )?(first|last) (day|week|week ?day) of (.+))', $str, $matches)):
+                $d = static::getJDateArray($this->jModify($matches[4]));
+                switch ($matches[3]) {
+                    case 'day':
+                        $d['day'] = $matches[2] == 'first' ? 1 : static::jDaysInMonth($d['year'], $d['month']);
+                        break;
+                    case 'week day':
+                    case 'weekday':
+                        $d['day'] = $matches[2] == 'first' ? 1 : static::jDaysInMonth($d['year'], $d['month']);
+                        $step = $matches[2] == 'first' ? 1 : -1;
+                        while ($this->jIsHoliday()) {
+                            $this->jModify($step . ' day');
+                        }
+                        $modifyIsDone = true;
+                        break;
+
+                }
+                $str = str_replace($matches[0], '', $str);
+                break;
+
+            // Relative Day/Month
+            case (preg_match('((last|next|previous|this) (month|year))', $str, $matches)):
+                $str = str_replace($matches[0], '', $str);
+                switch ($matches[1]) {
+                    case 'next':
+                        $d[$matches[2]]++;
+                        break;
+                    case 'last':
+                    case 'previous':
+                        $d[$matches[2]]--;
+                        break;
+                }
+                break;
+
+            // Absolute Date
+            case (preg_match('(([0-9]{1,2} )?(' . implode('|', array_keys(static::$months)) . ')( [0-9]{1,4})?)', $str, $matches)):
+                $d['year'] = isset($matches[3]) && !empty($matches[3]) ? (int)$matches[3] : $d['year'];
+                $d['month'] = static::$months[strtolower($matches[2])];
+                $d['day'] = empty($matches[1]) ? 1 : (int)$matches[1];
+                $str = str_replace($matches[0], '', $str);
+                break;
+
+            // Absolute Date Time
+            case (preg_match('(([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}))', $str, $m)):
+                $d = array('year' => $m[1], 'month' => $m[2], 'day' => $m[3], 'hour' => $m[4], 'minute' => $m[5], 'second' => $m[6]);
+                $str = str_replace($m[0], '', $str);
+                break;
+
+            // Absolute Date
+            case (preg_match('(([0-9]{4})-([0-9]{2})-([0-9]{2}))', $str, $m)):
+                $str = str_replace($m[0], '', $str);
+                $d['year'] = $m[1];
+                $d['month'] = $m[2];
+                $d['day'] = $m[3];
+                break;
+
+            // Relative Years
+            case (preg_match('#(([-+]?[0-9]+) years?( ago)?)#', $str, $matches)):
+                $str = str_replace($matches[0], '', $str);
+//                $direction =
+                $d['year'] += $matches[2];
+                break;
+
+            // Relative Months
+            case (preg_match('/(([-+]?[0-9]+) months?( ago)?)/', $str, $matches)):
+                $str = str_replace($matches[1], '', $str);
+                $d['month'] += $matches[2];
+                break;
+
+            // Relative Weekdays
+            case (preg_match('/(([-+]?[0-9]+) ?weekdays?( ago)?)/', $str, $matches)):
+                $step = ($matches[2] < 0 ? -1 : 1) * (isset($matches[3]) ? -1 : 1);
+                $i = 0;
+                while ($i < $step * $matches[2]) {
+                    $this->jModify($step . ' day');
+                    $i += $this->jIsHoliday() ? 0 : 1;
+                }
+                $str = str_replace($matches[0], '', $str);
+                $modifyIsDone = true;
+                break;
+
+            // Smaller than a Day Modifications
+            default:
+                $this->modify(trim($str));
+                $str = '';
+                $modifyIsDone = true;
+        }
+
+
+        if (!$modifyIsDone) {
+            static::fixWraps($d['year'], $d['month'], $d['day'], $d['hour'], $d['minute'], $d['second']);
+
+            $this->jSetDateTime($d['year'], $d['month'], $d['day'], $d['hour'], $d['minute'], $d['second']);
+        }
+
+        if (Carbon::hasRelativeKeywords(trim($str))) {
+            $this->jModify($str);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Normalizes the given DateTime values and removes wraps.
+     * @param null $year
+     * @param null $month
+     * @param null $day
+     * @param null $hour
+     * @param null $minute
+     * @param null $second
+     */
+    protected static function fixWraps(
+        &$year = null,
+        &$month = null,
+        &$day = null,
+        &$hour = null,
+        &$minute = null,
+        &$second = null
+    ) {
+        if ($year < 0) {
+            // Cannot handle dates less than 0.
+            // converting negative years to Gregorian cause error
+            $year = 0;
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+        } elseif ($year > 1876) {
+            // Cannot handle dates grater than 1876
+            $year = 1876;
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+        }
+
+        // Month
+        if ($month === null) {
+            return;
+        }
+        if ($month <= 0) {
+            $year = $year + (int)($month / 12) - 1;
+            $month = 12 + $month % 12;
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+        } elseif ($month > 12) {
+            $year = $year + (int)($month / 12);
+            $month = $month % 12;
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+        }
+
+        // Day
+        if ($day === null) {
+            return;
+        }
+        if ($day > ($daysInMonth = static::jDaysInMonth($year, $month))) {
+            $day = $day - $daysInMonth;
+            $month++;
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+
+        } elseif ($day == 0) {
+            $day = static::daysInPreviousJalaliMonth($year, $month);
+            $month--;
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+
+        } elseif ($day < 0) {
+            $pmDays = static::daysInPreviousJalaliMonth($year, $month);
+
+            if ($day > -$pmDays) {
+                $month--;
+                $day = $pmDays + $day;
+                static::fixWraps($year, $month, $day, $hour, $minute, $second);
+
+            } elseif ($day <= -$pmDays) {
+                $month--;
+                $day = $day + $pmDays;
+                static::fixWraps($year, $month, $day, $hour, $minute, $second);
+            }
+        }
+
+        // Hour
+        if ($hour === null) {
+            return;
+        }
+        if ($hour >= 24) {
+            $day = $day + (int)($hour / 24);
+            $hour = ($hour % 24);
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+
+        } elseif ($hour < 0) {
+            $day = $day + (int)($hour / 24) - 1;
+            $hour = 24 + ($hour % 24);
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+        }
+
+        // Minute
+        if ($minute === null) {
+            return;
+        }
+        if ($minute >= 60) {
+            $hour = $hour + (int)($minute / 60);
+            $minute = ($minute % 60);
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+
+        } elseif ($minute < 0) {
+            $hour = $hour + (int)($minute / 60) - 1;
+            $minute = 60 + ($minute % 60);
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+        }
+
+        // Seconds
+        if ($second === null) {
+            return;
+        }
+        if ($second >= 60) {
+            $minute = $minute + (int)($second / 60);
+            $second = ($second % 60);
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+
+        } elseif ($second < 0) {
+            $minute = $minute + (int)($second / 60) - 1;
+            $second = 60 + ($second % 60);
+            static::fixWraps($year, $month, $day, $hour, $minute, $second);
+        }
+    }
+
+    protected static function daysInPreviousJalaliMonth($year, $month)
+    {
+        if ($month == 1) {
+            return static::jDaysInMonth($year - 1, 12);
+        }
+
+        return static::jDaysInMonth($year, $month - 1);
+    }
+
+    /**
+     * Number of days in a given month in a Jalaali year.
+     * @param int $jy
+     * @param int $jm
+     * @return int
+     */
+    public static function jDaysInMonth($jy, $jm)
+    {
+        if ($jm <= 6) {
+            return 31;
+        }
+
+        if ($jm <= 11) {
+            return 30;
+        }
+
+        return self::isLeapJalaliYear($jy) ? 30 : 29;
+    }
+
+    private static function jNowIfNull(
+        &$year = null,
+        &$month = null,
+        &$day = null,
+        $tz = null
+    ) {
+        $now = new Carbon(null, $tz);
+
+        $defaults = static::getJDateArray($now);
+
+        $year = $year === null ? $defaults['year'] : $year;
+        $month = $month === null ? $defaults['month'] : $month;
+        $day = $day === null ? $defaults['day'] : $day;
+    }
+
+    /**
+     * @param Carbon $carbon
+     * @return array
+     */
+    private function getJDateArray($carbon)
+    {
+        return array_combine([
+            'year',
+            'month',
+            'day',
+            'hour',
+            'minute',
+            'second',
+        ], explode('-', $carbon->jFormat('Y-n-j-G-i-s')));
+    }
 
 }
