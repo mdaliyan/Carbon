@@ -56,6 +56,66 @@ class IsTest extends AbstractTestCase
         $this->assertTrue(Carbon::now()->isToday());
     }
 
+    public function testIsNextWeekTrue()
+    {
+        $this->assertTrue(Carbon::now()->addWeek()->isNextWeek());
+    }
+
+    public function testIsLastWeekTrue()
+    {
+        $this->assertTrue(Carbon::now()->subWeek()->isLastWeek());
+    }
+
+    public function testIsNextWeekFalse()
+    {
+        $this->assertFalse(Carbon::now()->addWeek(2)->isNextWeek());
+    }
+
+    public function testIsLastWeekFalse()
+    {
+        $this->assertFalse(Carbon::now()->subWeek(2)->isLastWeek());
+    }
+
+    public function testIsNextMonthTrue()
+    {
+        $this->assertTrue(Carbon::now()->addMonthNoOverflow()->isNextMonth());
+    }
+
+    public function testIsLastMonthTrue()
+    {
+        $this->assertTrue(Carbon::now()->subMonthNoOverflow()->isLastMonth());
+    }
+
+    public function testIsNextMonthFalse()
+    {
+        $this->assertFalse(Carbon::now()->addMonthsNoOverflow(2)->isNextMonth());
+    }
+
+    public function testIsLastMonthFalse()
+    {
+        $this->assertFalse(Carbon::now()->subMonthsNoOverflow(2)->isLastMonth());
+    }
+
+    public function testIsNextYearTrue()
+    {
+        $this->assertTrue(Carbon::now()->addYear()->isNextYear());
+    }
+
+    public function testIsLastYearTrue()
+    {
+        $this->assertTrue(Carbon::now()->subYear()->isLastYear());
+    }
+
+    public function testIsNextYearFalse()
+    {
+        $this->assertFalse(Carbon::now()->addYear(2)->isNextYear());
+    }
+
+    public function testIsLastYearFalse()
+    {
+        $this->assertFalse(Carbon::now()->subYear(2)->isLastYear());
+    }
+
     public function testIsTodayFalseWithYesterday()
     {
         $this->assertFalse(Carbon::now()->subDay()->endOfDay()->isToday());
@@ -113,7 +173,7 @@ class IsTest extends AbstractTestCase
 
     public function testNowIsPastFalse()
     {
-        if (version_compare(PHP_VERSION, '7.1.0', '<')) {
+        if (version_compare(PHP_VERSION, '7.1.0', '>=')) {
             $this->markTestSkipped();
         }
 

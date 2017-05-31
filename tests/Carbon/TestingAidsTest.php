@@ -26,30 +26,34 @@ class TestingAidsTest extends AbstractTestCase
 
     public function testTestingAidsWithTestNowSet()
     {
-        $testNow = Carbon::yesterday();
-        Carbon::setTestNow($testNow);
+        Carbon::setTestNow($yesterday = Carbon::yesterday());
 
         $this->assertTrue(Carbon::hasTestNow());
-        $this->assertSame($testNow, Carbon::getTestNow());
+        $this->assertSame($yesterday, Carbon::getTestNow());
+    }
+
+    public function testTestingAidsWithTestNowSetToString()
+    {
+        Carbon::setTestNow('2016-11-23');
+        $this->assertTrue(Carbon::hasTestNow());
+        $this->assertEquals(Carbon::getTestNow(), Carbon::parse('2016-11-23'));
     }
 
     public function testConstructorWithTestValueSet()
     {
-        $testNow = Carbon::yesterday();
-        Carbon::setTestNow($testNow);
+        Carbon::setTestNow($yesterday = Carbon::yesterday());
 
-        $this->assertEquals($testNow, new Carbon());
-        $this->assertEquals($testNow, new Carbon(null));
-        $this->assertEquals($testNow, new Carbon(''));
-        $this->assertEquals($testNow, new Carbon('now'));
+        $this->assertEquals($yesterday, new Carbon());
+        $this->assertEquals($yesterday, new Carbon(null));
+        $this->assertEquals($yesterday, new Carbon(''));
+        $this->assertEquals($yesterday, new Carbon('now'));
     }
 
     public function testNowWithTestValueSet()
     {
-        $testNow = Carbon::yesterday();
-        Carbon::setTestNow($testNow);
+        Carbon::setTestNow($yesterday = Carbon::yesterday());
 
-        $this->assertEquals($testNow, Carbon::now());
+        $this->assertEquals($yesterday, Carbon::now());
     }
 
     public function testParseWithTestValueSet()
