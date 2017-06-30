@@ -736,7 +736,7 @@ trait Jalali
      */
     public function jIsSameDay(Carbon $dt)
     {
-        return $this->toDateString() === $dt->toDateString();
+        return $this->jToDateString() === $dt->jToDateString();
     }
 
     ///////////////////////////////////////////////////////////////////

@@ -740,7 +740,10 @@ class Carbon extends DateTime
      */
     public function __set($name, $value)
     {
-        $this->__jSet($name, $value);
+        if ($this->__jSet($name, $value)){
+
+            return;
+        }
 
         switch ($name) {
             case 'year':

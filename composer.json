@@ -1,16 +1,19 @@
 {
-    "name": "nesbot/carbon",
+    "name": "mdaliyan/carbon",
     "type": "library",
     "description": "A simple API extension for DateTime.",
     "keywords": [
+        "jdate",
+        "shamsi",
+        "jalali",
         "date",
         "time",
         "DateTime"
     ],
-    "homepage": "http://carbon.nesbot.com",
+    "homepage": "http://carbon.mdaliyan.com",
     "support": {
-        "issues": "https://github.com/briannesbitt/Carbon/issues",
-        "source": "https://github.com/briannesbitt/Carbon"
+        "issues": "https://github.com/mdaliyan/Carbon/issues",
+        "source": "https://github.com/mdaliyan/Carbon"
     },
     "license": "MIT",
     "authors": [
@@ -18,6 +21,11 @@
             "name": "Brian Nesbitt",
             "email": "brian@nesbot.com",
             "homepage": "http://nesbot.com"
+        },
+        {
+            "name": "Mohammad Aliyan",
+            "email": "md.aliyan@gmail.com",
+            "homepage": "http://mdaliyan.com"
         }
     ],
     "require": {
